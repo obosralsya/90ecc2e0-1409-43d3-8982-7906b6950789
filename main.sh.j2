@@ -1,0 +1,68 @@
+#!/bin/bash
+
+set -e
+set -o pipefail
+
+
+command="$1"
+shift
+
+curl_options=""
+get_params=()
+url_params=()
+
+case $command in
+{% for endpoint in config.api.endpoints %}
+    {{ endpoint.name }})
+        {% if endpoint.method == 'GET' or endpoint.method == 'HEAD' %}
+        curl_options="${curl_options} --get"
+        {% endif %}
+
+        {% if endpoint.params %}
+        while [[ $# -gt 0 ]]; do
+            case $1 in
+                {% for name, param in endpoint.params.items() %}
+                --{{ name }})
+                    {% if param.place == 'query' %}
+                    curl_options="${curl_options} --data-urlencode {{ name }}=$2"
+                    get_params+=("{{ name }}")
+                    {% elif param.place == 'url' %}
+                    {{ name }}="$2"
+                    url_params+=("{{ name }}")
+                    {% endif %}
+
+                    shift
+                    shift
+                    ;;
+                {% endfor %}
+                -*)
+                    echo "Unknown option $1"
+                    exit 1
+                    ;;
+            esac
+        done
+
+        {% for name, param in endpoint.params.items() %}
+        {% if param.required and param.place == 'query' %}
+        if [[ ! " ${get_params[*]} " =~ " {{ name }} " ]]; then
+            echo "{{ name }} is required, but not set."
+            exit 1
+        fi
+        {% elif param.required and param.place == 'url' %}
+        if [[ ! " ${url_params[*]} " =~ " {{ name }} " ]]; then
+            echo "{{ name }} is required, but not set."
+            exit 1
+        fi
+        {% endif %}
+        {% endfor %}
+
+        {% endif %}
+
+        curl \
+            -X {{ endpoint.method }}\
+            "{{ endpoint.url }}"\
+            ${curl_options}
+        ;;
+
+{% endfor %}
+esac

@@ -1,0 +1,24 @@
+
+api:
+  endpoints:
+    - name: kv-list
+      method: GET
+      url: http://localhost:8500/v1/kv/
+      params:
+        keys:
+          required: true
+          place: query
+
+    - name: kv-get
+      method: GET
+      url: http://localhost:8500/v1/kv/${name}
+      params:
+        name:
+          required: true
+          place: url
+        keys:
+          required: false
+          place: query
+        raw:
+          required: false
+          place: query
