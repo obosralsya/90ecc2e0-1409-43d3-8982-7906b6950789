@@ -33,3 +33,11 @@ api:
         data:
           required: true
           place: data
+
+    - name: kv-delete
+      method: DELETE
+      url: http://localhost:8500/v1/kv/${name}
+      params:
+        name:
+          required: true
+          place: url
