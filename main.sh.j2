@@ -10,6 +10,7 @@ shift
 curl_options=""
 get_params=()
 url_params=()
+data_set="false"
 
 case $command in
 {% for endpoint in config.api.endpoints %}
@@ -29,6 +30,14 @@ case $command in
                     {% elif param.place == 'url' %}
                     {{ name }}="$2"
                     url_params+=("{{ name }}")
+                    {% elif param.place == 'data' %}
+                    if [[ "${data_set}" != "true" ]]; then
+                        curl_options="${curl_options} --data $2"
+                        data_set="true"
+                    else
+                        echo "Only one param with place=data is allowed."
+                        exit 1
+                    fi
                     {% endif %}
 
                     shift
@@ -50,6 +59,11 @@ case $command in
         fi
         {% elif param.required and param.place == 'url' %}
         if [[ ! " ${url_params[*]} " =~ " {{ name }} " ]]; then
+            echo "{{ name }} is required, but not set."
+            exit 1
+        fi
+        {% elif param.required and param.place == 'data' %}
+        if [[ "${data_set}" != "true" ]]; then
             echo "{{ name }} is required, but not set."
             exit 1
         fi

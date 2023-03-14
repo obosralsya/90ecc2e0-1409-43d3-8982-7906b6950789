@@ -22,3 +22,14 @@ api:
         raw:
           required: false
           place: query
+
+    - name: kv-set
+      method: PUT
+      url: http://localhost:8500/v1/kv/${name}
+      params:
+        name:
+          required: true
+          place: url
+        data:
+          required: true
+          place: data
