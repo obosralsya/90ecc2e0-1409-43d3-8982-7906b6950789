@@ -1,0 +1,24 @@
+*.egg*
+*.pyc
+/.venv/
+/tests.xml
+/.coverage*
+/htmlcov/
+/.cache/
+/.pytest_cache/
+/.mypy_cache/
+.tox/
+
+/build/
+/dist/
+/deb_dist/
+
+# IDE
+.idea
+.vscode
+
+# Configs
+
+# Others
+tests.json
+cover/
