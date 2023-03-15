@@ -7,7 +7,8 @@ set -o pipefail
 command="$1"
 shift
 
-curl_options=""
+curl_options=()
+
 get_params=()
 url_params=()
 data_set="false"
@@ -16,7 +17,7 @@ case $command in
 {% for endpoint in config.api.endpoints %}
     {{ endpoint.name }})
         {% if endpoint.method == 'GET' or endpoint.method == 'HEAD' %}
-        curl_options="${curl_options} --get"
+        curl_options+=("--get")
         {% endif %}
 
         {% if endpoint.params %}
@@ -25,14 +26,14 @@ case $command in
                 {% for name, param in endpoint.params.items() %}
                 --{{ name }})
                     {% if param.place == 'query' %}
-                    curl_options="${curl_options} --data-urlencode {{ name }}=$2"
+                    curl_options+=("--data-urlencode" "{{ name }}=$2")
                     get_params+=("{{ name }}")
                     {% elif param.place == 'url' %}
                     {{ name }}="$2"
                     url_params+=("{{ name }}")
                     {% elif param.place == 'data' %}
                     if [[ "${data_set}" != "true" ]]; then
-                        curl_options="${curl_options} --data $2"
+                        curl_options+=("--data" "$2")
                         data_set="true"
                     else
                         echo "Only one param with place=data is allowed."
@@ -75,7 +76,7 @@ case $command in
         curl \
             -X {{ endpoint.method }}\
             "{{ endpoint.url }}"\
-            ${curl_options}
+            "${curl_options[@]/#/}"
         ;;
 
 {% endfor %}
